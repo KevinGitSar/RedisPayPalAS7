@@ -1,6 +1,3 @@
-// "StAuth10222: I Kevin Sar, 000390567 certify that this material is my original work. 
-// No other person's work has been used without due acknowledgement. I have not made my work available to anyone else."
-
 const express = require("express");
 const app = express();
 const http = require('http').Server(app);
@@ -10,26 +7,27 @@ const redis = require("redis");
 // JSON MIDDLEWARE
 app.use(express.json());
 
-// require the paypal Checkout API SDK
+// Require the paypal Checkout API SDK
 const paypal = require("@paypal/checkout-server-sdk");
 
-// client ID an secret are needed to access the API
+// Client ID and secret are needed to access the API
 let clientId = "";
 let clientSecret = "";
 
-// Need to create an "environment" with these credentails and give them to the 
-// Paypal Checkout API SDK
+// Need to create an "environment" with these credentails and give them to the Paypal Checkout API SDK
 let environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
 let paypalClient = new paypal.core.PayPalHttpClient(environment);
 
+// Create redis client with
+// Set up database then add password/host and port to access
 let client = redis.createClient({
     password: '',
     socket: {
         host: '',
-        port: 11210
     }
 });
 
+// Buffer Time
 function wait(milliseconds) {
    return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
@@ -37,7 +35,7 @@ function wait(milliseconds) {
 
 client.connect();
 
-// Flush DB because it was annoying to see
+// Flush DB Command to refresh on server start (Uncomment first)
 //client.flushAll();
 
 // Async Function to subscribe to publishing channels (vegetables, fruits, breads)
@@ -47,8 +45,8 @@ async function receiver(){
 
     await subscriber.connect();
 
-    // Initialize id if it does not exists
-    // Increment id if it does exists
+    // Initialize ID if it does not exists
+    // Increment ID if it does exists
     let exists = await client.exists("record_id");
     let record_id;
     if(exists == 0){
@@ -210,5 +208,6 @@ app.get(/^(.+)$/, function(req,res){
 });
 
 http.listen(3000, function(){
+    // Check if server is live
     console.log('listening on *:3000');
 });

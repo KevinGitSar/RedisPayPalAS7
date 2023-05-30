@@ -7,9 +7,8 @@
 // Intended to simulate multiple microservices communicating live 
 // item availability data.
 //
-// Change the redis url and password below to the one for your own 
-// account.
-//
+// Change the redis url and password below to the one for your own account.
+
 const redis = require("redis");
 
 let client = redis.createClient({
