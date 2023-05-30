@@ -14,29 +14,18 @@ app.use(express.json());
 const paypal = require("@paypal/checkout-server-sdk");
 
 // client ID an secret are needed to access the API
-let clientId = "Acy9svUi_FUOiF-t6ehj6wRD4R4FZGY2ktDKDHQ6oJz7i0bJ-wnOmDMlgC4f5a989tknTn4m6DjMYAUY";
-let clientSecret = "ECHhhQKVlB9iHrkg74fWx5_HsUN7N-N9g4IQjZv97x4982GM7jZ3D3-K2B2AHZ2zrNtu4YMryMEMx2aj";
+let clientId = "";
+let clientSecret = "";
 
 // Need to create an "environment" with these credentails and give them to the 
 // Paypal Checkout API SDK
 let environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
 let paypalClient = new paypal.core.PayPalHttpClient(environment);
 
-// OLD
-// url: "redis://redis-14124.c89.us-east-1-3.ec2.cloud.redislabs.com:14124",
-// password: "PL8YxLvBypCwYFFQZZy94zunIrBNpLZS"
-// let client = 
-//   redis.createClient(
-//      {
-//       url: "redis-11210.c92.us-east-1-3.ec2.cloud.redislabs.com:11210",
-//       password: "yKJ8PJu2RAOkTuvnpNkRddVwFfoP3Gwp"
-//      }
-//   );
-
 let client = redis.createClient({
-    password: 'yKJ8PJu2RAOkTuvnpNkRddVwFfoP3Gwp',
+    password: '',
     socket: {
-        host: 'redis-11210.c92.us-east-1-3.ec2.cloud.redislabs.com',
+        host: '',
         port: 11210
     }
 });
