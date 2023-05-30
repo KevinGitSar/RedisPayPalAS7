@@ -12,9 +12,9 @@
 const redis = require("redis");
 
 let client = redis.createClient({
-  password: '',
+  password: '<Replace with Redis Database Password>',
   socket: {
-      host: '',
+      host: '<Replace with Redis Database Hostname>',
       port: 11210
   }
 });

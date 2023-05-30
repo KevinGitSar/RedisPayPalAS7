@@ -11,8 +11,8 @@ app.use(express.json());
 const paypal = require("@paypal/checkout-server-sdk");
 
 // Client ID and secret are needed to access the API
-let clientId = "";
-let clientSecret = "";
+let clientId = "<Replace with PayPal Client ID>";
+let clientSecret = "<Replace with PayPal Secret>";
 
 // Need to create an "environment" with these credentails and give them to the Paypal Checkout API SDK
 let environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
@@ -21,10 +21,10 @@ let paypalClient = new paypal.core.PayPalHttpClient(environment);
 // Create redis client with
 // Set up database then add password/host and port to access
 let client = redis.createClient({
-    password: '',
+    password: '<Replace with Redis Database Password>',
     socket: {
-        host: '',
-        port: 11210
+        host: '<Replace with Redis Database Hostname>',
+        port: 11210 //Replace with Redis Port Number
     }
 });
 
