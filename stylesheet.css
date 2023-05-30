@@ -1,0 +1,54 @@
+body {font-size: 24px;
+}
+
+a {padding: 10px;
+}
+
+td,tr,th,table {
+  border: 2px solid black;
+  padding: 20px;
+  font-size: 32px;
+}
+
+td, th{
+  width: 2%;
+  text-align: center;
+}
+
+table {
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right:auto;
+  table-layout: fixed;
+}
+
+ul {
+  padding: 0;
+  list-style-type: none;
+}
+
+.float-right{
+  float: right;
+}
+
+
+.order-details, .shipping-details{
+  width: 30%;
+}
+
+.flexItem1{
+  display: flex;
+  flex: 1 1 0px;
+}
+
+.flexItem2{
+  display: flex;
+  justify-content: center;
+  flex: 1 1 0px;
+}
+
+.flexItem3{
+  display: flex;
+  justify-content: flex-end;
+  flex: 1 1 0px;
+}

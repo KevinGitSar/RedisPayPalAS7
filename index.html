@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <!-- "StAuth10222: I Kevin Sar, 000390567 certify that this material is my original work. 
+          No other person's work has been used without due acknowledgement. I have not made my work available to anyone else." -->
+    
+      <title>Kev's One Stop Shop</title>
+      
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+      <!-- Changed the client-id=  to match my client id -->
+      <script src="https://www.paypal.com/sdk/js?currency=CAD&client-id=Acy9svUi_FUOiF-t6ehj6wRD4R4FZGY2ktDKDHQ6oJz7i0bJ-wnOmDMlgC4f5a989tknTn4m6DjMYAUY"></script>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+      <link rel="stylesheet" href="stylesheet.css">
+      
+    </head>
+    <body>
+      <div id="shopping-page" class="d-flex justify-content-center m-5">
+        <div class="container m-5">
+          <h1 class="text-center">Food Table</h1>
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Name</th>
+                  <th>Grams</th>
+                  <th>Calories</th>
+                  <th>Price</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="food-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="m-5">
+          <h1>Shopping Cart</h1>
+          <ul id="shopping-cart">
+            <li><div><strong><p class='float-right'>$0.00</p><p>Total: </p></strong></div></li>
+          </ul>
+        </div>
+        
+      </div>
+
+      <div id="checkout-page" class="text-center mt-5">
+        <div id="paypal"></div>
+        <div id="order_details">
+          <div id="shipping_display" class="container shipping-details"></div>
+          <div class="container order-details">
+            <h4 class='display-4 text-start mb-5 mt-5'>Order Details</h4>
+            <ul id="detail_display"></ul>
+          </div>
+          <button class="btn btn-dark" id="confirm">Confirm</button>
+        </div>
+      </div>
+    </body>
+
+    <script>
+      
+      // create the connection
+      // Initialize Maps/Arrays
+      var socket = io();
+      let itemMap = new Map();
+      let cartMap = new Map();
+      let idArray = [];
+
+      // Checkout function to submit data to back end and bring paypal payment/hides current page
+      function checkout(){
+        $("#shopping-page").removeClass("d-flex");
+        $("#shopping-page").hide();
+        $("#checkout-page").show();
+        for(const [key, value] of cartMap.entries()){
+          idArray.push(value.id);
+        }
+      }
+
+      // AddToCart Function to remove item from food table and add to shopping cart
+      function addToCart(id){
+        let total = 0;
+        let msg = itemMap.get(parseInt(id));
+        $("#"+id).remove();
+        cartMap.set(parseInt(id), itemMap.get(parseInt(id)));
+        itemMap.delete(parseInt(id));
+
+        $("#shopping-cart").empty();
+        for(const [key, value] of cartMap.entries()){
+          $("#shopping-cart").append("<li><p class='float-right'>$" + value.price +".00</p><div><p>" + value.type + "</p> </div></li>");
+          total += value.price;
+        }
+        $("#shopping-cart").append("<li><div><strong><p class='float-right'>$" + total + ".00</p><p>Total: </p></strong></div></li>");
+        $("#shopping-cart").append("<li class='text-center'><button class='btn btn-success' onclick='checkout()'>Checkout!</button></li>");
+      }
+
+      // Listen for vegetable and output to table
+      socket.on("data-vegetable", data => {
+        itemMap.set(parseInt(data.id), data);
+
+        $("#food-table").append("<tr id='"+data.id+"'><td>Vegetables</td><td>" + data.type + "</td><td>" + data.grams + "(g)</td><td>" + data.calories + "(cal)</td><td>$" + data.price + ".00</td><td><button class='btn btn-dark' onclick='addToCart("+data.id+")'>Add</button></td></tr>");
+      });
+
+      // Listen for fruit and output to table
+      socket.on("data-fruit", data => {
+        itemMap.set(parseInt(data.id), data);
+        $("#food-table").append("<tr id='"+data.id+"'><td>Fruits</td><td>" + data.type + "</td><td>" + data.grams + "(g)</td><td>" + data.calories + "(cal)</td><td>$" + data.price + ".00</td><td><button class='btn btn-dark' onclick='addToCart("+data.id+")'>Add</button></td></tr>");
+      });
+
+      // Listen for bread and output to table
+      socket.on("data-bread", data => {
+        itemMap.set(parseInt(data.id), data);
+        $("#food-table").append("<tr id='"+data.id+"'><td>Breads</td><td>" + data.type + "</td><td>" + data.grams + "(g)</td><td>" + data.calories + "(cal)</td><td>$" + data.price + ".00</td><td><button class='btn btn-dark' onclick='addToCart("+data.id+")'>Add</button></td></tr>");
+      });
+
+      window.addEventListener("load", function () {
+        $("#checkout-page").hide();
+
+      // initially hide the order confirmation details and confirm button
+      document.getElementById("order_details").style = "display: none";
+
+      // renders the paypal buttons in the div with id #paypal
+      paypal
+        .Buttons({
+
+          // makes an AJAX request to the backend to create the order
+          createOrder: function () {
+            return fetch("/create-order", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              // we could send data about the items being purchased as JSON data 
+              // here, and the backend could figure out the price and what is 
+              // being purchaed based on this
+              body: JSON.stringify({idArray}),
+            })
+              .then(res => {
+                if (res.ok) return res.json()
+                return res.json().then(json => Promise.reject(json))
+              })
+              .then(({ id }) => {
+                return id
+              })
+              .catch(e => {
+                console.error(e.error)
+              })
+          },
+          // when the order has been approved, allow the user to confirm the order 
+          // by clicking a confirm button
+          onApprove: function (data, actions) {
+
+            return actions.order.get().then(function (orderDetails) {
+
+              // Accessing items and shipping
+              let shipping = orderDetails.purchase_units[0].shipping;
+              let receipt = orderDetails.purchase_units[0].items;
+
+              // display the order details, and order button
+              document.getElementById("order_details").style = "display: block";
+              
+              // Go through items and summarize order to display
+              for(const item of receipt){
+                $("#detail_display").append("<li><div class='d-flex justify-content-between'><p class='flexItem1'>" + item.name + "</p><p class='flexItem2'>x" + item.quantity +"</p><p class='flexItem3'>$"+ item.unit_amount.value +"</p></div></li>");
+              }
+              // Include total to summary
+              $("#detail_display").append("<li><strong><div class='d-flex justify-content-between'><p class='flexItem1'>Total: </p><p class='flexItem3'>$" + orderDetails.purchase_units[0].amount.value + "</p></div></strong></li>");
+
+              // Display Shipping details
+              $("#shipping_display").append("<h4 class='display-4 text-start mb-5'>Shipping Details</h4><div class='d-flex'><label class='flexItem1'>Full Name: </label><label class='flexItem1'>" + shipping.name.full_name + "</label></div><div class='d-flex'><label class='flexItem1'>Address: </label><label class='flexItem1'>" + shipping.address.address_line_1 + "</label></div><div class='d-flex'><label class='flexItem1'>City: </label><label class='flexItem1'>" + shipping.address.admin_area_2 + "</label></div><div class='d-flex'><label class='flexItem1'>Province: </label><label class='flexItem1'>" + shipping.address.admin_area_1 + "</label></div><div class='d-flex'><label class='flexItem1'>Postal Code: </label><label class='flexItem1'>" + shipping.address.postal_code + "</label></div><div class='d-flex'><label class='flexItem1'>Country: </label><label class='flexItem1'>" + shipping.address.country_code + " </label></div>")
+              
+              // if the user clicks the order button, carry out the transaction
+              document.getElementById('confirm')
+                      .addEventListener('click', function () {
+
+                  // Capture the transaction funds
+                  return actions.order.capture().then(function () {
+                    // Show a confirmation to the buyer
+                    if(!alert('Transaction complete!')){window.location.reload();};
+                  });
+                });
+              });
+            }
+
+          })
+        .render("#paypal")
+      });
+    </script>
+  </html>
