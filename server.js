@@ -24,6 +24,7 @@ let client = redis.createClient({
     password: '',
     socket: {
         host: '',
+        port: 11210
     }
 });
 
